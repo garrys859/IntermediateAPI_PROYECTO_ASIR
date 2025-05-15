@@ -5,6 +5,9 @@ from enum import Enum
 import uvicorn
 import asyncio
 from datetime import datetime
+import shutil, tempfile, os, zipfile, pathlib, aiofiles
+from docker_manager import docker_manager
+
 
 app = FastAPI(title="Intermediate API for Proxmox and Docker")
 
@@ -63,9 +66,12 @@ async def process_proxmox_request(proxmox_item: Dict[str, Any]):
     print(f"Proxmox VM created for user: {proxmox_item['userid']}")
 
 async def process_docker_request(docker_item: Dict[str, Any]):
-    """Simulate an asynchronous processing of the Docker request"""
-    await asyncio.sleep(1)
-    print(f"Docker Container created: {docker_item['Webname']}")
+    """Create folders and execute docker commands without blocking the main thread"""
+    try:
+        await asyncio.to_thread(docker_manager.handle_request, docker_item)
+        print(f"[Docker] Deploy completado para {docker_item['Webname']}")
+    except Exception as exc:
+        print(f"[Docker] ERROR: {exc}")
 
 @app.get("/heartbeat", response_model=HeartbeatResponse)
 async def heartbeat():
@@ -126,17 +132,26 @@ async def create_docker(
     userfile: Optional[UploadFile] = File(None)
 ):
     file_info = None
+    zip_path: str | None = None
+
     if userfile:
-        file_info = {
-            "filename": userfile.filename,
-            "content_type": userfile.content_type,
-        }
+        # guarda el contenido en un tmp seguro
+        suffix = pathlib.Path(userfile.filename).suffix.lower()
+        if suffix != ".zip":
+            raise HTTPException(400, "Solo se aceptan archivos .zip")
+
+        fd, zip_path = tempfile.mkstemp(suffix=".zip")
+        async with aiofiles.open(fd, "wb") as out_fp:
+            while chunk := await userfile.read(1024 * 1024):
+                await out_fp.write(chunk)
+        file_info = {"filename": userfile.filename, "stored_as": zip_path}
+
     
     docker_item = {
         "userid": userid,
         "Webtype": Webtype,
         "Webname": Webname,
-        "userfile": file_info
+        "zip_path": zip_path
     }
     
     docker_items.append(docker_item)
