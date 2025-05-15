@@ -8,7 +8,9 @@ import zipfile, os, pathlib, shutil, textwrap
 
 # Cambiar este path a la ruta donde se guardarán los servicios de los usuarios
 # Change this path to the path where the user's services will be saved
-BASE_PATH = pathlib.Path("/home/christian/Proyectos/ProyectoClase/apiProyecto/IntermediateAPI_PROYECTO_ASIR/API_Intermediate/srv")  # cámbialo si necesitas otra raíz
+BASE_PATH = pathlib.Path("/home/fastapi/prueba/srv/users")  # cámbialo si necesitas otra raíz
+# Dominio
+domain = 'mercuriosftp.sytes.net'
 
 class DockerManager:
     """
@@ -131,7 +133,7 @@ class DockerManager:
             volumes:
               - "./data:/usr/local/apache2/htdocs/"
             labels:
-              caddy: "{project}.quiere.cafe"
+              caddy: "{project}.{domain}"
               caddy.reverse_proxy: "{{{{upstreams 80}}}}"
             restart: always
 
@@ -140,7 +142,7 @@ class DockerManager:
             networks:
               - caddy_net
             labels:
-              caddy: "fb-{project}.quiere.cafe"
+              caddy: "fb-{project}.{domain}"
               caddy.reverse_proxy: "{{{{upstreams 80}}}}"
             volumes:
               - "./filebrowser_data/filebrowser.db:/database.db"
