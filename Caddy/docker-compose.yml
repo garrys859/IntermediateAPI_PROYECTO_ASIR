@@ -1,0 +1,30 @@
+services:
+  caddy:
+    image: lucaslorentz/caddy-docker-proxy:2.8.9
+    container_name: caddy
+    restart: unless-stopped
+
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - caddy_data:/data           # certificados
+      - caddy_config:/config       # config generada
+
+    environment:
+      - CADDY_INGRESS_NETWORKS=caddy_net  # dónde buscar backends
+
+    # Publica HTTPS / HTTP al exterior
+    ports:
+      - "80:80"
+      - "443:443"
+
+    networks:
+      - caddy_net
+
+networks:
+  caddy_net:
+    external: true
+
+volumes:
+  caddy_data:
+  caddy_config:
+

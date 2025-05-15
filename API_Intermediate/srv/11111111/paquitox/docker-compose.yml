@@ -1,0 +1,29 @@
+
+services:
+  httpd:
+    image: httpd:latest
+    networks:
+      - caddy_net
+    volumes:
+      - "./data:/usr/local/apache2/htdocs/"
+    labels:
+      caddy: "paquitox.quiere.cafe"
+      caddy.reverse_proxy: "{{upstreams 80}}"
+    restart: always
+
+  filebrowser:
+    image: filebrowser/filebrowser:latest
+    networks:
+      - caddy_net
+    labels:
+      caddy: "fb-paquitox.quiere.cafe"
+      caddy.reverse_proxy: "{{upstreams 80}}"
+    volumes:
+      - "./filebrowser_data/filebrowser.db:/database.db"
+      - "./data:/srv"
+    command: --database /database.db
+    restart: always
+
+networks:
+  caddy_net:
+    external: true
