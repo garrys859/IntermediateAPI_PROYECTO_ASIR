@@ -31,17 +31,19 @@ class VMAction(str, Enum):
     apagar = "apagar"
     pausar = "pausar"
     encender = "encender"
+    eliminar = "eliminar"
 
 class ServiceAction(str, Enum):
     apagar = "apagar"
     reiniciar = "reiniciar"
     encender = "encender"
+    eliminar = "eliminar"
 
 # ----------------------
 # Modelos de entrada/salida
 # ----------------------
 class VMCreate(BaseModel):
-    id_user: str
+    id_user: int
     passwd: str = Field(..., min_length=1)
     sistema: Sistema
     disksize: int = Field(..., gt=0, description="Disk size in GB")
@@ -55,7 +57,7 @@ class VM(BaseModel):
     status: str = "encendido"
 
 class ServiceCreate(BaseModel):
-    id_user: str
+    id_user: int
     tipo_servicio: List[ServicioTipo]
     nombre_servicio: str
 
@@ -115,7 +117,7 @@ def get_service(service_id: str):
 
 @app.post("/service", response_model=Service, status_code=201)
 async def create_service(
-    id_user: str = Form(...),
+    id_user: int = Form(...),
     tipo_servicio: List[ServicioTipo] = Form(...),
     nombre_servicio: str = Form(...),
     archivo: UploadFile = File(...)  # Archivo zip de la app
