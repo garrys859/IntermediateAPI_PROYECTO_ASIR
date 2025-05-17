@@ -3,20 +3,31 @@ from mysql.connector import Error
 
 def create_connection():
     connection = None
-    connection = mysql.connector.connect(
+    try:
+        connection = mysql.connector.connect(
             host="localhost",
-            user="",     # Replace with your username
-            password=""      # Replace with your password
+            user="cloudfaster",
+            password="qwerty-1234",
+            auth_plugin='mysql_native_password'
         )
+    except Error as e:
+        print(f"Error: {e}")
+    return connection
 
 def create_database(connection, query):
     cursor = connection.cursor()
-    cursor.execute(query)
+    try:
+        cursor.execute(query)
+    except Error as e:
+        print(f"Error: {e}")
 
 def execute_query(connection, query):
     cursor = connection.cursor()
-    cursor.execute(query)
-    connection.commit()
+    try:
+        cursor.execute(query)
+        connection.commit()
+    except Error as e:
+        print(f"Error: {e}")
 
 def main():
     # Connect to MariaDB
@@ -86,6 +97,7 @@ def main():
     """
     execute_query(connection, create_api_keys_table)
 
-
 if __name__ == "__main__":
     main()
+
+# Save this as create_cloudfaster_db.py
