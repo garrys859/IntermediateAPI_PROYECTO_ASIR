@@ -4,3 +4,4 @@ pydantic
 python-multipart
 docker
 aiofiles
+mysql-connector-python
