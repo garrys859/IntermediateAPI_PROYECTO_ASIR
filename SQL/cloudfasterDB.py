@@ -5,7 +5,7 @@ def create_connection():
     connection = None
     connection = mysql.connector.connect(
             host="localhost",
-            user="root",     # Replace with your username
+            user="",     # Replace with your username
             password=""      # Replace with your password
         )
 
