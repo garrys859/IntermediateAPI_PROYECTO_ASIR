@@ -1,11 +1,7 @@
-# app/models.py
 from pydantic import BaseModel, Field
 from enum import Enum
 from typing import Optional, List
 
-# ----
-# Enumeraciones
-# ----
 class Sistema(str, Enum):
     WINDOWS_11 = "WINDOWS_11"
     WINDOWS_SERVER_2025 = "WINDOWS_SERVER_2025"
@@ -36,12 +32,9 @@ class ServiceAction(str, Enum):
     encender = "encender"
     eliminar = "eliminar"
 
-# ----
-# Modelos de entrada/salida
-# ----
 class VMCreate(BaseModel):
     userid: str
-    passwd: str = Field(..., min_length=8)
+    vm_name: str
     sistema: Sistema
     disksize: int = Field(40, ge=10, le=500)
     cores: int = Field(2, ge=1, le=8)
@@ -63,12 +56,11 @@ class Service(BaseModel):
     info: ServiceCreate
     status: str = "encendido"
 
-# Template IDs for different OS types
 TEMPLATE_IDS = {
     Sistema.WINDOWS_11: 101,
-    Sistema.WINDOWS_SERVER_2025: 102,
+    Sistema.WINDOWS_SERVER_2025: 104,
     Sistema.WINDOWS_SERVER_2022: 103,
-    Sistema.UBUNTU24_CLIENT: 104,
+    Sistema.UBUNTU24_CLIENT: 102,
     Sistema.UBUNTU24_SERVER: 105,
     Sistema.FEDORA: 106,
     Sistema.REDHAT: 107
