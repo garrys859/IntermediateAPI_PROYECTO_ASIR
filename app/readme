@@ -1,0 +1,1 @@
+para indicar la carpeta donde se encuentra el proyecto: export PYTHONPATH=$PYTHONPATH:/home/fastapi #cambiar por la carpeta donde se encuentra el proyecto
