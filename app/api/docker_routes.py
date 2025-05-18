@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, s
 from uuid import uuid4
 import os
 import tempfile
+import subprocess
 
 from app.core.config import get_settings
 from app.services.docker_service import DockerService
@@ -20,7 +21,8 @@ async def create_service(
     id_user: int = Form(...),
     tipo_servicio: ServicioTipo = Form(...),
     nombre_servicio: str = Form(...),
-    archivo: UploadFile = File(None)
+    archivo: UploadFile = File(None),
+    git_repo_url: str = Form(None)
 ):
     zip_path = None
     try:
@@ -42,6 +44,31 @@ async def create_service(
             tipo_servicio=tipo_servicio.value,
             zip_path=zip_path
         )
+
+        if git_repo_url and git_repo_url.strip():
+            try:
+                user = docker_service.db_service.get_user_by_userid_or_username(id_user, "")
+                if not user:
+                    raise HTTPException(
+                        status_code=status.HTTP_404_NOT_FOUND,
+                        detail="Username not found for the given user ID"
+                    )
+                _, username = user
+                project_path = f"/srv/users/{username}/{nombre_servicio}/data"
+                os.makedirs(project_path, exist_ok=True)
+                result_clone = subprocess.run(
+                    ["git", "clone", git_repo_url, project_path],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True
+                )
+                if result_clone.returncode != 0:
+                    raise Exception(f"Git clone failed: {result_clone.stderr}")
+            except Exception as e:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=f"Failed to clone git repository: {str(e)}"
+                )
 
         service_create = ServiceCreate(
             id_user=id_user,
